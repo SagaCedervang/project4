@@ -15,8 +15,13 @@ namespace project4
         Rectangle rekt2 = new Rectangle(685, 200, 10, 80);
 
         Texture2D penguinBild;
-        Rectangle penguinrekt = new Rectangle(300, 200, 20, 20);
+        Vector2 penguinPosition = new Vector2(300, 200);
+        Vector2 penguinHastighet = new Vector2(2, 3);
+        Rectangle penguinHitbox;
 
+        KeyboardState tangentbord = Keyboard.GetState();
+
+        int updatesTillNyTräff = 60;
 
 
         public Game1()
@@ -40,25 +45,56 @@ namespace project4
 
             paddleBild = Content.Load<Texture2D>("paddle");
             penguinBild = Content.Load<Texture2D>("penguin");
+            penguinHitbox = new Rectangle(300, 200, 20, 20);
         }
 
         protected override void Update(GameTime gameTime)
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
+            
+            penguinHitbox.X = (int)penguinPosition.X;
+            penguinHitbox.Y = (int)penguinPosition.Y;
+            penguinPosition += penguinHastighet;
 
-            penguinrekt.X += 1;
-            penguinrekt.Y += 2;
-
-            if(penguinrekt.Y > 300 || penguinrekt.Y < 0)
+            if (penguinPosition.Y < 0 || penguinPosition.Y > 460)
             {
-                penguinrekt.Y *= -1;
+                penguinHastighet.Y *= -1;
+                
+            }
+           
+            tangentbord = Keyboard.GetState();
+
+            if (tangentbord.IsKeyDown(Keys.Up))
+            {
+                rekt2.Y -= 5;
+            }
+
+            if(tangentbord.IsKeyDown(Keys.Down))
+            {
+                rekt2.Y += 5;
+            }
+
+            if (tangentbord.IsKeyDown(Keys.W))
+            {
+                rekt1.Y -= 5;
+            }
+
+            if (tangentbord.IsKeyDown(Keys.S))
+            {
+                rekt1.Y += 5;
             }
 
 
+            updatesTillNyTräff--;
 
+            if (penguinHitbox.Intersects(rekt1) && updatesTillNyTräff <= 30 || penguinHitbox.Intersects(rekt2) && updatesTillNyTräff <= 30)
+            {
+                penguinHastighet.X *= -1;
+                updatesTillNyTräff = 60;
+            }
 
-
+            NyBoll();
             base.Update(gameTime);
         }
 
@@ -70,11 +106,20 @@ namespace project4
 
             spriteBatch.Draw(paddleBild, rekt1, Color.White);
             spriteBatch.Draw(paddleBild, rekt2, Color.White);
-            spriteBatch.Draw(penguinBild, penguinrekt, Color.White);
+            spriteBatch.Draw(penguinBild, penguinHitbox, Color.White);
 
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        void NyBoll()
+        {
+            if (penguinPosition.X < 0 || penguinPosition.X > 800)
+            {
+                penguinPosition.X = 300;
+                penguinPosition.Y = 200;
+            }
         }
     }
 }
